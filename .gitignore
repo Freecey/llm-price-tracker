@@ -1,0 +1,4 @@
+mariadb_data/
+.env
+vendor/
+node_modules/

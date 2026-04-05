@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db:
+    image: mariadb:latest
+    container_name: llm_price_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "azerty123.."
+    volumes:
+      - ./mariadb_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    networks:
+      - llmnet
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: llm_price_phpmyadmin
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - "8888:80"
+    volumes:
+      - ./php_uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+    networks:
+      - llmnet
+
+networks:
+  llmnet:
+    driver: bridge

@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="/img/favicon.png">
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
             background-color: #f0f2f5;
@@ -58,6 +59,7 @@
                     <button id="slotMachineBtn" class="btn btn-sm btn-warning ms-2" title="Modèle aléatoire">
                         🎰
                     </button>
+                    <a href="{{ route('glossary') }}" class="nav-link {{ request()->routeIs('glossary') ? 'active' : '' }}">📖 Glossaire</a>
                     <a href="{{ route('about') }}" class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}">À propos</a>
                 </div>
             </div>
@@ -92,5 +94,10 @@
     @include('components.favorites-widget')
     @include('components.easter-eggs')
     @yield('scripts')
+    <script>
+        // Activation des tooltips Bootstrap partout
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    </script>
 </body>
 </html>

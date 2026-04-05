@@ -102,7 +102,13 @@ class ModelController extends Controller
             }
         }
 
-        $models = $query->paginate(20)->withQueryString();
+        $perPage = $request->get('per_page', 20);
+        $allowedPerPages = [10, 20, 50, 100, 200, 500];
+        if (!in_array($perPage, $allowedPerPages)) {
+            $perPage = 20;
+        }
+        
+        $models = $query->paginate($perPage)->withQueryString();
         
         // Récupérer les listes pour les filtres
         $providers = Model::select('provider_name')->distinct()->orderBy('provider_name')->pluck('provider_name');
@@ -537,7 +543,13 @@ class ModelController extends Controller
             }
         }
         
-        $models = $query->paginate(30)->withQueryString();
+        $perPage = $request->get('per_page', 30);
+        $allowedPerPages = [10, 30, 50, 100, 200];
+        if (!in_array($perPage, $allowedPerPages)) {
+            $perPage = 30;
+        }
+        
+        $models = $query->paginate($perPage)->withQueryString();
         
         $providers = Model::where('supports_tools', $withTools ? 1 : 0)
             ->distinct('provider_name')

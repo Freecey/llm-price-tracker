@@ -72,11 +72,29 @@ def sync_to_db(api_models):
             links['huggingface'] = f"https://huggingface.co/{hf_id}"
         
         name = model.get('name', or_id)
+        description = model.get('description', '')
+        knowledge_cutoff = model.get('knowledge_cutoff')
+        created_timestamp = model.get('created')
+        expiration_timestamp = model.get('expiration_date')
+        
+        # Conversion des timestamps en dates lisibles (gère int et str)
+        def ts_to_date(ts):
+            if not ts: return None
+            try:
+                return datetime.fromtimestamp(int(ts), tz=timezone.utc)
+            except: return None
+
+        created_date = ts_to_date(created_timestamp)
+        expiration_date = ts_to_date(expiration_timestamp)
+        
+        tokenizer = architecture.get('tokenizer', '')
+        is_moderated = top_provider.get('is_moderated', False)
+        
         pricing = model.get('pricing', {})
         input_price = float(pricing.get('prompt', 0)) * 1_000_000
         output_price = float(pricing.get('completion', 0)) * 1_000_000
         
-        # Skip models with negative/placeholder pricing (e.g. openrouter/auto, openrouter/bodybuilder)
+        # Skip models with negative/placeholder pricing
         if input_price < 0 or output_price < 0:
             continue
 
@@ -85,24 +103,27 @@ def sync_to_db(api_models):
         model_record = cursor.fetchone()
 
         if not model_record:
-            # New model detected
             cursor.execute(
-                "INSERT INTO models (openrouter_id, name, status, specs, links, context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, top_provider_max_completion_tokens, supports_tools, created_at, updated_at) "
-                "VALUES (%s, %s, 'active', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (or_id, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, supports_tools, now, now)
+                "INSERT INTO models (openrouter_id, name, description, status, specs, links, context_length, max_tokens, modality, "
+                "input_modalities, output_modalities, provider_name, quantization, tokenizer, top_provider_max_completion_tokens, "
+                "supports_tools, is_moderated, knowledge_cutoff, expiration_date, created_at_date, created_at, updated_at) "
+                "VALUES (%s, %s, %s, 'active', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (or_id, name, description, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, 
+                 input_modalities, output_modalities, provider_name, quantization, tokenizer, tp_max_tokens, 
+                 supports_tools, is_moderated, knowledge_cutoff, expiration_date, created_date, now, now)
             )
             model_id = cursor.lastrowid
             change_type = 'created'
         else:
             model_id = model_record['id']
-            # Update detailed specs
             cursor.execute(
-                "UPDATE models SET updated_at = %s, name = %s, status = 'active', specs = %s, links = %s, "
-                "context_length = %s, max_tokens = %s, modality = %s, input_modalities = %s, "
-                "output_modalities = %s, provider_name = %s, quantization = %s, "
-                "top_provider_max_completion_tokens = %s, supports_tools = %s WHERE id = %s",
-                (now, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, 
-                 input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, supports_tools, model_id)
+                "UPDATE models SET updated_at = %s, name = %s, description = %s, status = 'active', specs = %s, links = %s, "
+                "context_length = %s, max_tokens = %s, modality = %s, input_modalities = %s, output_modalities = %s, "
+                "provider_name = %s, quantization = %s, tokenizer = %s, top_provider_max_completion_tokens = %s, "
+                "supports_tools = %s, is_moderated = %s, knowledge_cutoff = %s, expiration_date = %s, created_at_date = %s WHERE id = %s",
+                (now, name, description, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, 
+                 input_modalities, output_modalities, provider_name, quantization, tokenizer, tp_max_tokens, 
+                 supports_tools, is_moderated, knowledge_cutoff, expiration_date, created_date, model_id)
             )
             
             # 2. Check for price/spec changes

@@ -15,3 +15,4 @@ Route::get('/tools', [ModelController::class, 'tools'])->name('models.tools');
 Route::get('/api/random-model', [ModelController::class, 'randomModel'])->name('models.randomModel');
 Route::get('/dashboard', [ModelController::class, 'dashboard'])->name('models.dashboard');
 Route::get('/about', [ModelController::class, 'about'])->name('about');
+Route::view('/glossary', 'glossary')->name('glossary');

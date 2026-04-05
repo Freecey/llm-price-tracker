@@ -8,7 +8,31 @@
                 <h4 class="mb-0">{{ $model->name }}</h4>
             </div>
             <div class="card-body">
-                <p class="text-muted">{{ $model->openrouter_id }}</p>
+                <p class="text-muted small">{{ $model->openrouter_id }}</p>
+                
+                @if($model->description)
+                <div class="alert alert-light border-start border-4 border-primary mb-3">
+                    <p class="mb-0 small fst-italic">{{ Str::limit($model->description, 300) }}</p>
+                </div>
+                @endif
+
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item"><strong>Knowledge Cutoff:</strong> {{ $model->knowledge_cutoff ?: 'Inconnue' }}</li>
+                    <li class="list-group-item"><strong>Tokenizer:</strong> {{ $model->tokenizer ?: 'N/A' }}</li>
+                    <li class="list-group-item"><strong>Moderation:</strong> {{ $model->is_moderated ? '⚠️ Active' : '✅ Aucune' }}</li>
+                    <li class="list-group-item">
+                        <strong>Date de création:</strong> 
+                        {{ $model->created_at_date ? \Carbon\Carbon::parse($model->created_at_date)->format('d/m/Y') : 'N/A' }}
+                    </li>
+                    @if($model->expiration_date)
+                    <li class="list-group-item bg-danger text-white">
+                        <strong>⚠️ Expiration:</strong> 
+                        {{ \Carbon\Carbon::parse($model->expiration_date)->format('d/m/Y') }}
+                        <small>(Modèle temporaire)</small>
+                    </li>
+                    @endif
+                </ul>
+
                 <div class="mb-3">
                     <canvas id="priceChart" height="100"></canvas>
                 </div>
@@ -19,13 +43,28 @@
         <div class="card shadow-sm">
             <div class="card-header">Spécifications</div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item"><strong>Provider:</strong> {{ $model->provider_name }}</li>
-                <li class="list-group-item"><strong>Modality:</strong> {{ $model->modality ?: 'N/A' }}</li>
-                <li class="list-group-item"><strong>Context:</strong> {{ number_format($model->context_length) }}</li>
-                <li class="list-group-item"><strong>Max Tokens:</strong> {{ number_format($model->max_tokens) }}</li>
-                <li class="list-group-item"><strong>Quantization:</strong> {{ $model->quantization ?: 'N/A' }}</li>
                 <li class="list-group-item">
-                    <strong>Tools/Function Calling:</strong> 
+                    <strong data-bs-toggle="tooltip" title="L'entreprise qui a développé le modèle">Provider:</strong> 
+                    {{ $model->provider_name }}
+                </li>
+                <li class="list-group-item">
+                    <strong data-bs-toggle="tooltip" title="Types de données gérés (entrée->sortie)">Modality:</strong> 
+                    {{ $model->modality ?: 'N/A' }}
+                </li>
+                <li class="list-group-item">
+                    <strong data-bs-toggle="tooltip" title="Mémoire à court terme du modèle (en tokens)">Context:</strong> 
+                    {{ number_format($model->context_length) }}
+                </li>
+                <li class="list-group-item">
+                    <strong data-bs-toggle="tooltip" title="Taille maximale d'une réponse unique">Max Tokens:</strong> 
+                    {{ number_format($model->max_tokens) }}
+                </li>
+                <li class="list-group-item">
+                    <strong data-bs-toggle="tooltip" title="Optimisation de la précision pour la vitesse">Quantization:</strong> 
+                    {{ $model->quantization ?: 'N/A' }}
+                </li>
+                <li class="list-group-item">
+                    <strong data-bs-toggle="tooltip" title="Capacité à utiliser des outils externes (calcul, web, etc.)">Tools:</strong> 
                     @if($model->supports_tools)
                         <span class="badge bg-success">✓ Supporté</span>
                     @else

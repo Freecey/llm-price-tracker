@@ -106,7 +106,28 @@
     <h3 class="h5 mb-0">
         {{ $withTools ? '✓ Modèles avec Tools' : '× Modèles sans Tools' }}
     </h3>
-    <span class="badge bg-primary">{{ $models->total() }} résultats</span>
+    <div class="d-flex gap-2 align-items-center">
+        <form method="GET" action="{{ route('models.tools') }}" class="d-flex gap-2 align-items-center">
+            <input type="hidden" name="with_tools" value="{{ $withTools ? 1 : 0 }}">
+            @foreach(request()->except('per_page', 'with_tools') as $key => $value)
+                @if(is_array($value))
+                    @foreach($value as $v)
+                        <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                    @endforeach
+                @else
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endif
+            @endforeach
+            <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10/page</option>
+                <option value="30" {{ request('per_page') == 30 || !request('per_page') ? 'selected' : '' }}>30/page</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50/page</option>
+                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100/page</option>
+                <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200/page</option>
+            </select>
+        </form>
+        <span class="badge bg-primary">{{ $models->total() }} résultats</span>
+    </div>
 </div>
 
 <div class="table-responsive">

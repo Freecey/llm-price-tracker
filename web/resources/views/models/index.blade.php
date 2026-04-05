@@ -158,6 +158,25 @@
         <small class="text-muted">Cochez les modèles à comparer, puis cliquez sur "Comparer"</small>
     </div>
     <div class="d-flex gap-2 align-items-center">
+        <form method="GET" action="{{ route('models.index') }}" class="d-flex gap-2 align-items-center">
+            @foreach(request()->except('per_page') as $key => $value)
+                @if(is_array($value))
+                    @foreach($value as $v)
+                        <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                    @endforeach
+                @else
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endif
+            @endforeach
+            <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10/page</option>
+                <option value="20" {{ request('per_page') == 20 || !request('per_page') ? 'selected' : '' }}>20/page</option>
+                <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50/page</option>
+                <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100/page</option>
+                <option value="200" {{ request('per_page') == 200 ? 'selected' : '' }}>200/page</option>
+                <option value="500" {{ request('per_page') == 500 ? 'selected' : '' }}>500/page</option>
+            </select>
+        </form>
         <span class="badge bg-primary">{{ $models->total() }} résultats</span>
         <form method="GET" action="{{ route('models.compare') }}" id="compareForm">
             <div id="compareInputs"></div>
@@ -239,6 +258,7 @@
                     </a>
                 </th>
                 <th width="80">Tools</th>
+                <th width="50">Safe</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -273,6 +293,13 @@
                         <span class="badge bg-success" title="Supporte les tools/function calling">✓</span>
                     @else
                         <span class="badge bg-secondary" title="Ne supporte pas les tools">×</span>
+                    @endif
+                </td>
+                <td class="text-center">
+                    @if($model->is_moderated)
+                        <span class="badge bg-warning text-dark" title="Modération de contenu active">⚠️</span>
+                    @else
+                        <span class="badge bg-light text-muted" title="Aucune modération">🔓</span>
                     @endif
                 </td>
                 <td>

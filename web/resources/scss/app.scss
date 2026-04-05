@@ -1,0 +1,37 @@
+// Kyra's Theme - Custom Bootstrap Variables
+$primary: #0d6efd;
+$secondary: #6c757d;
+$dark: #1a1a1a;
+$light: #f8f9fa;
+$body-bg: #f0f2f5;
+$font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$border-radius: 0.5rem;
+$card-border-radius: 0.75rem;
+
+@import 'bootstrap/scss/bootstrap';
+
+// Custom Styles
+.navbar-kyra {
+    background: linear-gradient(90deg, $dark 0%, #333 100%);
+    border-bottom: 3px solid $primary;
+}
+
+.card-kyra {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.table-kyra th a {
+    color: $dark;
+    text-decoration: none;
+    &:hover { color: $primary; }
+}
+
+.badge-provider {
+    background-color: #e9ecef;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}

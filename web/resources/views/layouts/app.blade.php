@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kyra's LLM Tracker ⌬</title>
     <link rel="icon" type="image/png" href="/img/favicon.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -37,6 +37,9 @@
                 <img src="/img/favicon.png" width="30" height="30" class="me-2 rounded-circle" alt="Kyra">
                 <span class="fw-bold">Kyra's LLM Tracker ⌬</span>
             </a>
+            <div class="nav-link">
+                <a href="{{ route('about') }}" class="text-white-50 text-decoration-none small">À propos</a>
+            </div>
         </div>
     </nav>
     <main class="container my-4">

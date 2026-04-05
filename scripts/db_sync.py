@@ -61,6 +61,12 @@ def sync_to_db(api_models):
         quantization = architecture.get('quantization', '')
         tp_max_tokens = top_provider.get('max_completion_tokens', 0)
 
+        # Extract links
+        links = model.get('links', {})
+        hf_id = model.get('hugging_face_id')
+        if hf_id and 'huggingface' not in links:
+            links['huggingface'] = f"https://huggingface.co/{hf_id}"
+        
         name = model.get('name', or_id)
         pricing = model.get('pricing', {})
         input_price = float(pricing.get('prompt', 0)) * 1_000_000
@@ -73,9 +79,9 @@ def sync_to_db(api_models):
         if not model_record:
             # New model detected
             cursor.execute(
-                "INSERT INTO models (openrouter_id, name, status, specs, context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, top_provider_max_completion_tokens, created_at, updated_at) "
-                "VALUES (%s, %s, 'active', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (or_id, name, json.dumps(model), context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, now, now)
+                "INSERT INTO models (openrouter_id, name, status, specs, links, context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, top_provider_max_completion_tokens, created_at, updated_at) "
+                "VALUES (%s, %s, 'active', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (or_id, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, now, now)
             )
             model_id = cursor.lastrowid
             change_type = 'created'
@@ -83,11 +89,11 @@ def sync_to_db(api_models):
             model_id = model_record['id']
             # Update detailed specs
             cursor.execute(
-                "UPDATE models SET updated_at = %s, name = %s, status = 'active', specs = %s, "
+                "UPDATE models SET updated_at = %s, name = %s, status = 'active', specs = %s, links = %s, "
                 "context_length = %s, max_tokens = %s, modality = %s, input_modalities = %s, "
                 "output_modalities = %s, provider_name = %s, quantization = %s, "
                 "top_provider_max_completion_tokens = %s WHERE id = %s",
-                (now, name, json.dumps(model), context_length, max_tokens, modality, 
+                (now, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, 
                  input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, model_id)
             )
             

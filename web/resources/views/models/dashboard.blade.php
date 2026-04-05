@@ -6,37 +6,92 @@
     <a href="{{ route('models.index') }}" class="btn btn-outline-secondary">← Retour à la liste</a>
 </div>
 
-{{-- Top cards --}}
+{{-- Top cards + Free Widget --}}
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card shadow-sm card-kyra">
-            <div class="card-body text-center">
-                <h6 class="text-muted mb-2">Modèles suivis</h6>
-                <h2 class="mb-0">{{ $modalityCounts->sum('count') }}</h2>
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm card-kyra">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-2">Modèles suivis</h6>
+                        <h2 class="mb-0">{{ $modalityCounts->sum('count') }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm card-kyra">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-2">Providers</h6>
+                        <h2 class="mb-0">{{ $providerStats->count() }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm card-kyra">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted mb-2">Changements (7j)</h6>
+                        <h2 class="mb-0">{{ $recentChanges->count() }}</h2>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card shadow-sm card-kyra">
-            <div class="card-body text-center">
-                <h6 class="text-muted mb-2">Providers</h6>
-                <h2 class="mb-0">{{ $providerStats->count() }}</h2>
+        <div class="card shadow-sm border-success h-100" style="border-width: 2px;">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">🎁 Top Gratuits</h6>
+                <a href="{{ route('models.free') }}" class="btn btn-sm btn-light text-success fw-bold" style="font-size: 0.7rem;">VOIR TOUT</a>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm card-kyra">
-            <div class="card-body text-center">
-                <h6 class="text-muted mb-2">Changements (7j)</h6>
-                <h2 class="mb-0">{{ $recentChanges->count() }}</h2>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @foreach($topFreeModels as $free)
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold small">{{ $free['model']->name }}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">{{ $free['model']->provider_name }}</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success">{{ $free['kyra_score'] }}%</span>
+                                <div style="font-size: 0.7rem;">{{ number_format($free['price'], 4) }}$</div>
+                            </div>
+                        </div>
+                    @endforeach
+                    @if($topFreeModels->isEmpty())
+                        <div class="p-3 text-center text-muted small">
+                            Aucun modèle gratuit trouvé pour le moment.
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Top 10 modèles les moins chers + Répartition modalités --}}
+{{-- Nouveautés + Top 10 --}}
 <div class="row mb-4">
     <div class="col-md-8">
+        @if($newModels->isNotEmpty())
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">🚀 Dernières Arrivées</h6>
+                <small>Les nouveaux modèles du marché</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @foreach($newModels as $new)
+                    <a href="{{ route('models.show', $new->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ $new->name }}</div>
+                            <small class="text-muted">{{ $new->provider_name }}</small>
+                        </div>
+                        <span class="badge bg-light text-dark">{{ $new->created_at_date ? \Carbon\Carbon::parse($new->created_at_date)->format('d/m') : 'Récemment' }}</span>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white">
                 <h6 class="mb-0">🏆 Top 10 Modèles les Moins Chers (Prix Input)</h6>

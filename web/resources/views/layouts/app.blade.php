@@ -47,12 +47,26 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto align-items-center">
                     <a href="{{ route('models.index') }}" class="nav-link {{ request()->routeIs('models.index') ? 'active' : '' }}">Liste</a>
-                    <a href="{{ route('models.compare') }}" class="nav-link {{ request()->routeIs('models.compare') ? 'active' : '' }}">Comparer</a>
-                    <a href="{{ route('models.tools') }}" class="nav-link {{ request()->routeIs('models.tools') ? 'active' : '' }}">🛠️ Tools</a>
                     <a href="{{ route('models.dashboard') }}" class="nav-link {{ request()->routeIs('models.dashboard') ? 'active' : '' }}">Dashboard</a>
-                    <a href="{{ route('providers.list') }}" class="nav-link {{ request()->routeIs('providers.list') ? 'active' : '' }}">🏢 Providers</a>
-                    <a href="{{ route('models.trends') }}" class="nav-link {{ request()->routeIs('models.trends') ? 'active' : '' }}">Tendances</a>
-                    <a href="{{ route('models.alerts') }}" class="nav-link {{ request()->routeIs('models.alerts') ? 'active' : '' }}">🚨 Alertes</a>
+                    
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Ressources
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ route('models.compare') }}">⚖️ Comparateur</a></li>
+                            <li><a class="dropdown-item" href="{{ route('models.free') }}" class="{{ request()->routeIs('models.free') ? 'active' : '' }}">🎁 Modèles Gratuits</a></li>
+                            <li><a class="dropdown-item" href="{{ route('models.tools') }}">🛠️ Fonctionnalités Tools</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ route('providers.list') }}">🏢 Providers</a></li>
+                            <li><a class="dropdown-item" href="{{ route('models.trends') }}">📈 Tendances</a></li>
+                            <li><a class="dropdown-item" href="{{ route('models.alerts') }}">🚨 Alertes Prix</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ route('glossary') }}">📖 Glossaire</a></li>
+                            <li><a class="dropdown-item" href="{{ route('about') }}">ℹ️ À propos</a></li>
+                        </ul>
+                    </div>
+
                     <button class="btn btn-sm btn-outline-light ms-2" data-bs-toggle="modal" data-bs-target="#exportModal">
                         📥 Export
                     </button>
@@ -62,8 +76,6 @@
                     <button id="slotMachineBtn" class="btn btn-sm btn-warning ms-2" title="Modèle aléatoire">
                         🎰
                     </button>
-                    <a href="{{ route('glossary') }}" class="nav-link {{ request()->routeIs('glossary') ? 'active' : '' }}">📖 Glossaire</a>
-                    <a href="{{ route('about') }}" class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}">À propos</a>
                 </div>
             </div>
         </div>

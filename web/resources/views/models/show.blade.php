@@ -1,11 +1,24 @@
+@php
+    // Calcul du Kyra Score de fiabilité pour cette vue
+    $historyCount = $model->priceHistory->count();
+    $kyraReliability = round(min(100, ($historyCount / 5) * 100));
+    $latestPrice = $model->priceHistory->sortByDesc('timestamp')->first();
+@endphp
+
 @extends('layouts.app')
 
 @section('content')
 <div class="row">
     <div class="col-md-8">
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ $model->name }}</h4>
+                <div class="text-end" title="Kyra Score de Fiabilité">
+                    <small class="d-block opacity-75">Fiabilité</small>
+                    <span class="badge bg-{{ $kyraReliability > 80 ? 'success' : ($kyraReliability > 40 ? 'warning' : 'danger') }} fs-6">
+                        {{ $kyraReliability }}%
+                    </span>
+                </div>
             </div>
             <div class="card-body">
                 <p class="text-muted small">{{ $model->openrouter_id }}</p>
@@ -16,22 +29,39 @@
                 </div>
                 @endif
 
-                <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item"><strong>Knowledge Cutoff:</strong> {{ $model->knowledge_cutoff ?: 'Inconnue' }}</li>
-                    <li class="list-group-item"><strong>Tokenizer:</strong> {{ $model->tokenizer ?: 'N/A' }}</li>
-                    <li class="list-group-item"><strong>Moderation:</strong> {{ $model->is_moderated ? '⚠️ Active' : '✅ Aucune' }}</li>
-                    <li class="list-group-item">
-                        <strong>Date de création:</strong> 
-                        {{ $model->created_at_date ? \Carbon\Carbon::parse($model->created_at_date)->format('d/m/Y') : 'N/A' }}
-                    </li>
-                    @if($model->expiration_date)
-                    <li class="list-group-item bg-danger text-white">
-                        <strong>⚠️ Expiration:</strong> 
-                        {{ \Carbon\Carbon::parse($model->expiration_date)->format('d/m/Y') }}
-                        <small>(Modèle temporaire)</small>
-                    </li>
-                    @endif
-                </ul>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded h-100">
+                            <h6 class="border-bottom pb-2 mb-2">🧠 Intelligence & Données</h6>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Knowledge Cutoff:</span>
+                                <span class="fw-bold small">{{ $model->knowledge_cutoff ?: 'Inconnue' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Tokenizer:</span>
+                                <span class="fw-bold small">{{ $model->tokenizer ?: 'N/A' }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Moderation:</span>
+                                <span class="fw-bold small">{{ $model->is_moderated ? '⚠️ Oui' : '✅ Non' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded h-100">
+                            <h6 class="border-bottom pb-2 mb-2">📅 Cycle de vie</h6>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted small">Ajouté le:</span>
+                                <span class="fw-bold small">{{ $model->created_at_date ? \Carbon\Carbon::parse($model->created_at_date)->format('d/m/Y') : 'N/A' }}</span>
+                            </div>
+                            @if($model->expiration_date)
+                            <div class="mt-2 p-2 bg-danger text-white rounded text-center">
+                                <small>⚠️ Expiration: {{ \Carbon\Carbon::parse($model->expiration_date)->format('d/m/Y') }}</small>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
 
                 <div class="mb-3">
                     <canvas id="priceChart" height="100"></canvas>
@@ -43,33 +73,42 @@
         <div class="card shadow-sm">
             <div class="card-header">Spécifications</div>
             <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <strong data-bs-toggle="tooltip" title="L'entreprise qui a développé le modèle">Provider:</strong> 
-                    {{ $model->provider_name }}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Provider & Modalité</span>
+                        <span class="fw-bold">{{ $model->provider_name }}</span>
+                        <span class="badge bg-secondary ms-1">{{ $model->modality ?: 'N/A' }}</span>
+                    </div>
                 </li>
-                <li class="list-group-item">
-                    <strong data-bs-toggle="tooltip" title="Types de données gérés (entrée->sortie)">Modality:</strong> 
-                    {{ $model->modality ?: 'N/A' }}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Fenêtre de contexte</span>
+                        <span class="fw-bold text-primary">{{ number_format($model->context_length) }}</span> tokens
+                    </div>
                 </li>
-                <li class="list-group-item">
-                    <strong data-bs-toggle="tooltip" title="Mémoire à court terme du modèle (en tokens)">Context:</strong> 
-                    {{ number_format($model->context_length) }}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Max Output Tokens</span>
+                        <span class="fw-bold">{{ number_format($model->max_tokens) }}</span>
+                    </div>
                 </li>
-                <li class="list-group-item">
-                    <strong data-bs-toggle="tooltip" title="Taille maximale d'une réponse unique">Max Tokens:</strong> 
-                    {{ number_format($model->max_tokens) }}
+                @if($model->quantization)
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Quantization</span>
+                        <span class="font-monospace">{{ $model->quantization }}</span>
+                    </div>
                 </li>
-                <li class="list-group-item">
-                    <strong data-bs-toggle="tooltip" title="Optimisation de la précision pour la vitesse">Quantization:</strong> 
-                    {{ $model->quantization ?: 'N/A' }}
-                </li>
-                <li class="list-group-item">
-                    <strong data-bs-toggle="tooltip" title="Capacité à utiliser des outils externes (calcul, web, etc.)">Tools:</strong> 
-                    @if($model->supports_tools)
-                        <span class="badge bg-success">✓ Supporté</span>
-                    @else
-                        <span class="badge bg-secondary">× Non supporté</span>
-                    @endif
+                @endif
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="d-block text-muted small" style="font-size: 0.75rem;">Support des Outils (Tools)</span>
+                        @if($model->supports_tools)
+                            <span class="badge bg-success">✔️ Fonction Calling</span>
+                        @else
+                            <span class="badge bg-secondary">Non supporté</span>
+                        @endif
+                    </div>
                 </li>
             </ul>
             

@@ -17,3 +17,4 @@ Route::get('/api/random-model', [ModelController::class, 'randomModel'])->name('
 Route::get('/dashboard', [ModelController::class, 'dashboard'])->name('models.dashboard');
 Route::get('/about', [ModelController::class, 'about'])->name('about');
 Route::view('/glossary', 'glossary')->name('glossary');
+Route::get('/free', [ModelController::class, 'free'])->name('models.free');

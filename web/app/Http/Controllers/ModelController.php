@@ -28,17 +28,11 @@ class ModelController extends Controller
                     ? $latest->input_price_per_m / ($model->context_length / 1000) 
                     : PHP_FLOAT_MAX;
                 
-                // Score: bas prix (40%), contexte élevé (30%), tools support (20%), provider réputé (10%)
-                $priceScore = max(0, 100 - ($latest->input_price_per_m * 1000)); // 0-100
-                $contextScore = min(100, ($model->context_length / 200000) * 100); // 0-100
-                $toolsScore = $model->supports_tools ? 100 : 0;
-                $providerScore = in_array($model->provider_name, ['openai', 'anthropic', 'google', 'qwen', 'meta-llama']) ? 100 : 50;
-                
-                $totalScore = ($priceScore * 0.4) + ($contextScore * 0.3) + ($toolsScore * 0.2) + ($providerScore * 0.1);
+                $score = $this->calculateKyraScore($model->priceHistory);
                 
                 return [
                     'model' => $model,
-                    'score' => round($totalScore, 1),
+                    'score' => $score,
                     'price_per_k_context' => round($pricePerContext, 4),
                     'latest_price' => $latest,
                 ];
@@ -75,6 +69,11 @@ class ModelController extends Controller
             $query->where('supports_tools', $request->tools === '1' ? 1 : 0);
         }
 
+        // Filtre Contexte (Minimum)
+        if ($request->filled('min_context')) {
+            $query->where('context_length', '>=', $request->min_context * 1000); // Conversion k en tokens
+        }
+
         // Tri
         $sortField = $request->get('sort', 'name');
         $sortDir = $request->get('dir', 'asc');
@@ -108,7 +107,13 @@ class ModelController extends Controller
             $perPage = 20;
         }
         
-        $models = $query->paginate($perPage)->withQueryString();
+        $paginator = $query->paginate($perPage)->withQueryString();
+        
+        // Calcul du Kyra Score pour chaque modèle de la page
+        $models = $paginator->through(function($model) {
+            $model->kyra_score = $this->calculateKyraScore($model->priceHistory);
+            return $model;
+        });
         
         // Récupérer les listes pour les filtres
         $providers = Model::select('provider_name')->distinct()->orderBy('provider_name')->pluck('provider_name');
@@ -189,6 +194,31 @@ class ModelController extends Controller
     }
 
     public function dashboard() {
+        // Nouveautés (5 derniers modèles ajoutés)
+        $newModels = Model::with('priceHistory')
+            ->orderByDesc('created_at_date')
+            ->limit(5)
+            ->get();
+
+        // Top 3 des Modèles Gratuits (basé sur le Kyra Score)
+        $topFreeModels = Model::with('priceHistory')
+            ->has('priceHistory')
+            ->get()
+            ->map(function($model) {
+                $latest = $model->priceHistory->sortByDesc('timestamp')->first();
+                $price = $latest ? (float)$latest->input_price_per_m : null;
+                return [
+                    'model' => $model,
+                    'price' => $price,
+                    'kyra_score' => $this->calculateKyraScore($model->priceHistory),
+                    'is_free' => ($price == 0 || ($price !== null && $price < 0.05))
+                ];
+            })
+            ->filter(fn($item) => $item['is_free'])
+            ->sortByDesc('kyra_score')
+            ->take(3)
+            ->values();
+
         // Top 10 modèles les moins chers (par prix input)
         $cheapestModels = Model::with('priceHistory')
             ->has('priceHistory')
@@ -245,6 +275,8 @@ class ModelController extends Controller
             ->get();
 
         return view('models.dashboard', compact(
+            'newModels',
+            'topFreeModels',
             'cheapestModels',
             'providerStats',
             'modalityCounts',
@@ -636,5 +668,112 @@ class ModelController extends Controller
         ];
         
         return view('about', compact('stats'));
+    }
+
+    public function free(Request $request) {
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
+        
+        $perPage = 50;
+        $page = \Illuminate\Pagination\Paginator::resolveCurrentPage('page');
+        
+        // On récupère tout d'abord pour pouvoir filtrer par prix (qui est dans l'historique)
+        $allModels = Model::with('priceHistory')->has('priceHistory')->get();
+        
+        $processedModels = $allModels->map(function($model) {
+            $latest = $model->priceHistory->sortByDesc('timestamp')->first();
+            return [
+                'model' => $model,
+                'input_price' => $latest ? (float)$latest->input_price_per_m : null,
+                'output_price' => $latest ? (float)$latest->output_price_per_m : null,
+                'stability_score' => $this->calculateKyraScore($model->priceHistory),
+            ];
+        })->filter(function($item) {
+            // Soit c'est vraiment gratuit, soit c'est un "free tier" très bas
+            return ($item['input_price'] == 0 && $item['output_price'] == 0) ||
+                   ($item['input_price'] !== null && $item['input_price'] < 0.05);
+        });
+
+        // Filtres
+        if ($request->filled('search')) {
+            $term = strtolower($request->search);
+            $processedModels = $processedModels->filter(function($item) use ($term) {
+                return str_contains(strtolower($item['model']->name), $term) ||
+                       str_contains(strtolower($item['model']->openrouter_id), $term) ||
+                       str_contains(strtolower($item['model']->provider_name), $term);
+            });
+        }
+
+        if ($request->filled('provider')) {
+            $processedModels = $processedModels->filter(function($item) use ($request) {
+                return $item['model']->provider_name === $request->provider;
+            });
+        }
+
+        if ($request->filled('tools')) {
+            $withTools = $request->tools === '1';
+            $processedModels = $processedModels->filter(function($item) use ($withTools) {
+                return $item['model']->supports_tools == $withTools;
+            });
+        }
+
+        $processedModels = $processedModels->sortByDesc('stability_score')->values();
+
+        // Pagination manuelle
+        $total = $processedModels->count();
+        $items = $processedModels->slice(($page - 1) * $perPage, $perPage)->values();
+        $freeModels = new \Illuminate\Pagination\LengthAwarePaginator($items, $total, $perPage, $page, [
+            'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
+            'pageName' => 'page',
+        ]);
+
+        // Listes pour les filtres
+        $providers = $processedModels->pluck('model.provider_name')->unique()->sort()->values();
+
+        // Stats pour la page
+        $stats = [
+            'total_free' => $total,
+            'fully_free' => $processedModels->where('input_price', 0)->where('output_price', 0)->count(),
+            'top_providers' => $processedModels->take(3)->pluck('model.provider_name')->unique()->join(', '),
+        ];
+
+        return view('models.free', compact('freeModels', 'stats', 'providers'));
+    }
+
+    public function calculateKyraScore($history) {
+        if ($history->count() == 0) return 0;
+        
+        // 1. Score de Quantité (0-50 points) - Courbe plus rapide pour les nouveaux modèles
+        // 1 sync = 25pts, 2 syncs = 40pts, 3+ = 50pts
+        $count = $history->count();
+        $countScore = match(true) {
+            $count >= 3 => 50,
+            $count == 2 => 40,
+            $count == 1 => 25,
+            default => 0
+        };
+
+        // 2. Score de Stabilité (0-50 points)
+        $prices = $history->pluck('input_price_per_m')->filter(fn($p) => $p !== null && $p >= 0);
+        if ($prices->count() < 2) {
+            $stabilityScore = 25; // Neutre par défaut si pas assez de recul
+        } else {
+            $variance = 0;
+            $mean = $prices->avg();
+            if ($mean > 0) {
+                foreach ($prices as $p) {
+                    $variance += pow(($p - $mean), 2);
+                }
+                $variance /= $prices->count();
+                $stdDev = sqrt($variance);
+                $cv = $stdDev / $mean; // Coefficient de variation
+                
+                // On veut être gentil : un peu de variation est normale au début
+                $stabilityScore = max(0, 50 - ($cv * 500));
+            } else {
+                $stabilityScore = 50;
+            }
+        }
+
+        return round($countScore + $stabilityScore);
     }
 }

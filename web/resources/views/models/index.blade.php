@@ -143,6 +143,15 @@
                 </select>
             </div>
             <div class="col-md-2">
+                <select name="min_context" class="form-select">
+                    <option value="">Contexte min...</option>
+                    <option value="32" {{ request('min_context') == '32' ? 'selected' : '' }}>32k+</option>
+                    <option value="100" {{ request('min_context') == '100' ? 'selected' : '' }}>100k+ (Huge)</option>
+                    <option value="200" {{ request('min_context') == '200' ? 'selected' : '' }}>200k+</option>
+                    <option value="1000" {{ request('min_context') == '1000' ? 'selected' : '' }}>1M+ (Ultra)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">Filtrer</button>
             </div>
             <div class="col-md-2">
@@ -259,6 +268,7 @@
                 </th>
                 <th width="80">Tools</th>
                 <th width="50">Safe</th>
+                <th width="80" title="Kyra Score de Fiabilité">Fiabilité</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -294,6 +304,15 @@
                     @else
                         <span class="badge bg-secondary" title="Ne supporte pas les tools">×</span>
                     @endif
+                </td>
+                <td class="text-center">
+                    <div class="position-relative d-inline-block" style="width: 50px;" title="Kyra Score de Fiabilité">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{{ $model->kyra_score > 80 ? 'success' : ($model->kyra_score > 40 ? 'warning' : 'danger') }}" 
+                                 style="width: {{ $model->kyra_score }}%"></div>
+                        </div>
+                    </div>
+                    <div class="small text-muted" style="font-size: 0.7rem;">{{ $model->kyra_score }}%</div>
                 </td>
                 <td class="text-center">
                     @if($model->is_moderated)

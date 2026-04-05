@@ -47,7 +47,7 @@
                     <a href="{{ route('models.compare') }}" class="nav-link {{ request()->routeIs('models.compare') ? 'active' : '' }}">Comparer</a>
                     <a href="{{ route('models.tools') }}" class="nav-link {{ request()->routeIs('models.tools') ? 'active' : '' }}">🛠️ Tools</a>
                     <a href="{{ route('models.dashboard') }}" class="nav-link {{ request()->routeIs('models.dashboard') ? 'active' : '' }}">Dashboard</a>
-                    <a href="{{ route('models.providers') }}" class="nav-link {{ request()->routeIs('models.providers') ? 'active' : '' }}">Providers</a>
+                    <a href="{{ route('providers.list') }}" class="nav-link {{ request()->routeIs('providers.list') ? 'active' : '' }}">🏢 Providers</a>
                     <a href="{{ route('models.trends') }}" class="nav-link {{ request()->routeIs('models.trends') ? 'active' : '' }}">Tendances</a>
                     <a href="{{ route('models.alerts') }}" class="nav-link {{ request()->routeIs('models.alerts') ? 'active' : '' }}">🚨 Alertes</a>
                     <button class="btn btn-sm btn-outline-light ms-2" data-bs-toggle="modal" data-bs-target="#exportModal">

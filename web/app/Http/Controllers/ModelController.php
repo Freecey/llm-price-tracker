@@ -252,8 +252,18 @@ class ModelController extends Controller
         ));
     }
 
+    public function providersList() {
+        // Vue d'ensemble simple des providers
+        $providers = Model::selectRaw('provider_name, COUNT(*) as count, AVG(context_length) as avg_context')
+            ->groupBy('provider_name')
+            ->orderByDesc('count')
+            ->get();
+            
+        return view('providers.list', compact('providers'));
+    }
+
     public function providers() {
-        // Stats par provider avec détails
+        // Stats par provider avec détails approfondis
         $providerDetails = Model::with('priceHistory')
             ->has('priceHistory')
             ->get()
@@ -268,6 +278,13 @@ class ModelController extends Controller
                     return $latest ? $latest->input_price_per_m : PHP_FLOAT_MAX;
                 })->first();
                 
+                // Calculer le % de modèles avec tools
+                $toolsCount = $group->where('supports_tools', 1)->count();
+                $toolsPct = $group->count() > 0 ? round(($toolsCount / $group->count()) * 100) : 0;
+                
+                // Moyenne contexte
+                $avgContext = $group->avg('context_length');
+                
                 return [
                     'count' => $group->count(),
                     'avg_input' => $latestPrices->avg('input_price_per_m') ?? 0,
@@ -275,6 +292,8 @@ class ModelController extends Controller
                     'min_input' => $latestPrices->min('input_price_per_m') ?? 0,
                     'max_input' => $latestPrices->max('input_price_per_m') ?? 0,
                     'cheapest_model' => $cheapestModel,
+                    'tools_pct' => $toolsPct,
+                    'avg_context' => $avgContext,
                     'models' => $group->sortByDesc(function($m) {
                         $latest = $m->priceHistory->sortByDesc('timestamp')->first();
                         return $latest ? $latest->input_price_per_m : 0;

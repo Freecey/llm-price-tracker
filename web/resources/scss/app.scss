@@ -35,3 +35,18 @@ $card-border-radius: 0.75rem;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
 }
+
+.navbar .nav-link.active {
+    color: #fff !important;
+    border-bottom: 2px solid #0d6efd;
+}
+
+.card-kyra {
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.card-kyra:hover {
+    transform: translateY(-3px);
+}

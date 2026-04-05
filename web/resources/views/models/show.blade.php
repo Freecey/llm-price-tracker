@@ -24,9 +24,22 @@
                 <li class="list-group-item"><strong>Context:</strong> {{ number_format($model->context_length) }}</li>
                 <li class="list-group-item"><strong>Max Tokens:</strong> {{ number_format($model->max_tokens) }}</li>
                 <li class="list-group-item"><strong>Quantization:</strong> {{ $model->quantization ?: 'N/A' }}</li>
+                <li class="list-group-item">
+                    <strong>Tools/Function Calling:</strong> 
+                    @if($model->supports_tools)
+                        <span class="badge bg-success">✓ Supporté</span>
+                    @else
+                        <span class="badge bg-secondary">× Non supporté</span>
+                    @endif
+                </li>
             </ul>
             
             <div class="card-footer">
+                <div class="d-grid gap-2 mb-2">
+                    <button class="btn btn-warning btn-sm" onclick="addFavorite({{ $model->id }}, '{{ addslashes($model->name) }}', '{{ addslashes($model->provider_name) }}')">
+                        ⭐ Ajouter aux favoris
+                    </button>
+                </div>
                 <h6 class="mb-2">Liens externes :</h6>
                 <div class="d-grid gap-2">
                     <a href="https://openrouter.ai/models/{{ $model->openrouter_id }}" target="_blank" class="btn btn-outline-primary btn-sm">
@@ -44,6 +57,64 @@
         </div>
     </div>
 </div>
+
+{{-- Modèles similaires --}}
+@if($similarModels->isNotEmpty())
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h6 class="mb-0">🔍 Modèles similaires</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Modèle</th>
+                        <th>Provider</th>
+                        <th class="text-end">Input</th>
+                        <th class="text-end">Output</th>
+                        <th class="text-end">Contexte</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($similarModels as $similar)
+                    @php
+                        $latest = $similar->priceHistory->sortByDesc('timestamp')->first();
+                    @endphp
+                    <tr>
+                        <td>
+                            <div class="fw-bold small">{{ $similar->name }}</div>
+                            <small class="text-muted">{{ Str::limit($similar->openrouter_id, 25) }}</small>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ $similar->provider_name }}</span></td>
+                        <td class="text-end">
+                            @if($latest)
+                                <small>${{ number_format($latest->input_price_per_m, 4) }}</small>
+                            @endif
+                        </td>
+                        <td class="text-end">
+                            @if($latest)
+                                <small>${{ number_format($latest->output_price_per_m, 4) }}</small>
+                            @endif
+                        </td>
+                        <td class="text-end">
+                            <small>{{ number_format($similar->context_length) }}</small>
+                        </td>
+                        <td>
+                            <a href="{{ route('models.show', $similar->id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                →
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @section('scripts')

@@ -60,6 +60,10 @@ def sync_to_db(api_models):
         # Quantization and specifics
         quantization = architecture.get('quantization', '')
         tp_max_tokens = top_provider.get('max_completion_tokens', 0)
+        
+        # Check if model supports tools/function calling
+        supported_params = model.get('supported_parameters', [])
+        supports_tools = 'tools' in supported_params or 'tool_choice' in supported_params
 
         # Extract links
         links = model.get('links', {})
@@ -71,6 +75,10 @@ def sync_to_db(api_models):
         pricing = model.get('pricing', {})
         input_price = float(pricing.get('prompt', 0)) * 1_000_000
         output_price = float(pricing.get('completion', 0)) * 1_000_000
+        
+        # Skip models with negative/placeholder pricing (e.g. openrouter/auto, openrouter/bodybuilder)
+        if input_price < 0 or output_price < 0:
+            continue
 
         # 1. Ensure model exists in registry
         cursor.execute("SELECT id FROM models WHERE openrouter_id = %s", (or_id,))
@@ -79,9 +87,9 @@ def sync_to_db(api_models):
         if not model_record:
             # New model detected
             cursor.execute(
-                "INSERT INTO models (openrouter_id, name, status, specs, links, context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, top_provider_max_completion_tokens, created_at, updated_at) "
-                "VALUES (%s, %s, 'active', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (or_id, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, now, now)
+                "INSERT INTO models (openrouter_id, name, status, specs, links, context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, top_provider_max_completion_tokens, supports_tools, created_at, updated_at) "
+                "VALUES (%s, %s, 'active', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (or_id, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, supports_tools, now, now)
             )
             model_id = cursor.lastrowid
             change_type = 'created'
@@ -92,9 +100,9 @@ def sync_to_db(api_models):
                 "UPDATE models SET updated_at = %s, name = %s, status = 'active', specs = %s, links = %s, "
                 "context_length = %s, max_tokens = %s, modality = %s, input_modalities = %s, "
                 "output_modalities = %s, provider_name = %s, quantization = %s, "
-                "top_provider_max_completion_tokens = %s WHERE id = %s",
+                "top_provider_max_completion_tokens = %s, supports_tools = %s WHERE id = %s",
                 (now, name, json.dumps(model), json.dumps(links), context_length, max_tokens, modality, 
-                 input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, model_id)
+                 input_modalities, output_modalities, provider_name, quantization, tp_max_tokens, supports_tools, model_id)
             )
             
             # 2. Check for price/spec changes

@@ -40,4 +40,79 @@
         </div>
     </div>
 </div>
+
+{{-- Stats funs --}}
+@if($stats)
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">📊 Stats Fun (que personne n'a demandées mais que Kyra a ajoutées)</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <h6 class="text-muted small">Modèle le moins cher</h6>
+                    @if($stats['cheapest_model'])
+                        <div class="fw-bold text-success">{{ $stats['cheapest_model']['model']->name }}</div>
+                        <small>${{ number_format($stats['cheapest_model']['price'], 4) }}/M</small>
+                    @endif
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <h6 class="text-muted small">Modèle le plus cher</h6>
+                    @if($stats['most_expensive_model'])
+                        <div class="fw-bold text-danger">{{ $stats['most_expensive_model']['model']->name }}</div>
+                        <small>${{ number_format($stats['most_expensive_model']['price'], 4) }}/M</small>
+                    @endif
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <h6 class="text-muted small">Plus gros contexte</h6>
+                    @if($stats['biggest_context'])
+                        <div class="fw-bold text-primary">{{ $stats['biggest_context']->name }}</div>
+                        <small>{{ number_format($stats['biggest_context']->context_length) }} tokens</small>
+                    @endif
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-2 bg-light rounded">
+                    <div class="h4 mb-1">{{ $stats['total_history_entries'] }}</div>
+                    <small class="text-muted">Entrées d'historique</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-2 bg-light rounded">
+                    <div class="h4 mb-1">{{ $stats['providers_with_tools'] }}</div>
+                    <small class="text-muted">Providers avec tools</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-2 bg-light rounded">
+                    <div class="h4 mb-1">{{ number_format($stats['avg_context_length']) }}</div>
+                    <small class="text-muted">Contexte moyen</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-2 bg-light rounded">
+                    <div class="h4 mb-1">{{ $stats['total_sync_runs'] }}</div>
+                    <small class="text-muted">Jours de sync</small>
+                </div>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <div class="text-center text-muted small">
+            <p class="mb-1"><strong>🥚 Easter Eggs cachés :</strong></p>
+            <ul class="list-inline mb-0">
+                <li class="list-inline-item">⌨️ Konami Code (↑↑↓↓←→←→BA)</li>
+                <li class="list-inline-item">🎰 Slot machine (bouton navbar)</li>
+                <li class="list-inline-item">⌬ Ctrl+K (recherche rapide)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+@endif
 @endsection

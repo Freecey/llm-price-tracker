@@ -1,4 +1,6 @@
-# 🚀 LLM Price Tracker - Résumé de Session (05/04/2026)
+# 🚀 LLM Price Tracker - Journal de Bord & État d'Avancement
+
+*Dernière mise à jour : 05/04/2026 (Session "L'Ère Kyra" Part 2)*
 
 Ce fichier sert de point de reprise pour les futures sessions de développement.
 
@@ -37,11 +39,34 @@ Ce fichier sert de point de reprise pour les futures sessions de développement.
 - `web/resources/views/layouts/app.blade.php` : La structure globale et la navigation.
 - `web/routes/web.php` : La cartographie des URLs.
 
-## 🎯 Prochaines Étapes Possibles
-1. **Authentification User** : Pour sauvegarder les favoris et les configs d'alertes en BDD.
-2. **Cron Job** : Automatiser le `db_sync.py` et le `price_alerts.py` sur le serveur.
-3. **PWA** : Rendre l'app installable sur mobile.
-4. **API Publique** : Exposer les données pour d'autres développeurs.
+## 🚀 Session du 05/04/2026 (Soir) - Consolidation & Fiabilité
+
+### 🛠️ Améliorations de l'UX
+- **Page `/free`** : Passage en vue "Tableau" pour une lecture plus technique + Ajout des filtres (Provider, Tools).
+- **Menu Navigation** : Regroupement des pages secondaires dans un menu déroulant "Ressources" pour alléger la barre.
+- **Filtre Contexte** : Ajout d'un sélecteur de taille de fenêtre (32k, 100k, 1M+) sur la page principale.
+
+### 🧠 Intelligence Kyra (Score de Fiabilité)
+- **Algorithme v2** : Calcul basé sur la **Quantité** (historique) et la **Stabilité** (volatilité des prix). 
+- **Intégration Globale** : Le score est maintenant visible sur :
+    - La liste principale (`/models`)
+    - La fiche détails (`/model/{id}`)
+    - La page des gratuits (`/free`)
+    - Le Dashboard (Top 3 Gratuits)
+- **Section Nouveautés** : Widget sur le Dashboard montrant les 5 derniers modèles ajoutés.
+
+### 📦 Technique & Déploiement
+- **Code** : Refactoring du `ModelController` pour centraliser le calcul du score.
+- **Git** : Commit et Push sur GitHub (`feat: Add free models section, Kyra reliability score...`).
+
+---
+
+## 🎯 Prochaines Étapes (Backlog)
+1. **Export Avancé** : Intégrer le Kyra Score et les tags "Free/Stable" dans les exports CSV/JSON.
+2. **Authentification User** : Pour sauvegarder les favoris et les configs d'alertes en BDD.
+3. **Cron Job** : Automatiser le `db_sync.py` et le `price_alerts.py` sur le serveur (via Proxmox/Contabo).
+4. **PWA** : Rendre l'app installable sur mobile pour un accès rapide aux prix.
+5. **API Publique** : Exposer les données (readonly) pour d'autres développeurs.
 
 ---
 *Maintenu par Kyra ⌬*

@@ -29,8 +29,9 @@ Un tracker de prix LLM (OpenRouter) qui surveille l'évolution des coûts, des s
 
 ### 📈 Analytics & Comparaisons
 - **Comparaison côte-à-côte** (`/compare`) — sélection multi-modèles avec graphiques superposés
-- **Dashboard analytique** (`/dashboard`) — top 10 moins chers, répartition modalités, prix moyens par provider
+- **Dashboard analytique** (`/dashboard`) — top 10 moins chers, widgets "Top Gratuits" et "Nouveautés"
 - **Analyse par Provider** (`/providers`) — stats détaillées, évolution 30 jours, top modèles
+- **Modèles Gratuits** (`/free`) — section dédiée aux modèles 100% gratuits ou avec Free Tier
 - **Tendances** (`/trends`) — timeline des changements, top 20 plus grosses variations %, heatmap 14 jours
 
 ### 🚨 Alertes
@@ -39,9 +40,10 @@ Un tracker de prix LLM (OpenRouter) qui surveille l'évolution des coûts, des s
 - **Webhook Discord** configurable via `.env`
 
 ### ⌬ Kyra's Touch
-- **Kyra's Picks** — Top 5 modèles recommandés par algo de scoring intelligent (prix 40% + contexte 30% + tools 20% + provider 10%)
+- **Kyra Score** — Indice de fiabilité intelligent basé sur la quantité d'historique et la stabilité des prix
+- **Kyra's Picks** — Top 5 modèles recommandés par l'algo (mis à jour avec le nouveau score)
 - **Modèle du Jour** — spotlight quotidien aléatoire (seedé par date)
-- **Stats rapides** — 4 cards en homepage (total modèles, providers, prix moyen)
+- **Badges de Fiabilité** — Visualisation du score directement dans les listes et fiches modèles
 - **Favoris** (localStorage) — bouton flottant ⭐ pour sauvegarder tes modèles
 - **Export CSV/JSON** — téléchargement de toutes les données
 
@@ -284,6 +286,7 @@ php artisan route:list
 | `GET /dashboard` | Dashboard analytique |
 | `GET /providers` | Analyse détaillée par provider |
 | `GET /trends` | Tendances et évolutions de prix |
+| `GET /free` | Liste des modèles 100% gratuits et Free Tiers |
 | `GET /tools` | Page dédiée aux modèles avec/sans tools |
 | `GET /alerts` | Alertes de baisses de prix |
 | `GET /export?format=csv\|json` | Export des données |

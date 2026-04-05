@@ -45,6 +45,12 @@ Un tracker de prix LLM (OpenRouter) qui surveille l'évolution des coûts, des s
 - **Favoris** (localStorage) — bouton flottant ⭐ pour sauvegarder tes modèles
 - **Export CSV/JSON** — téléchargement de toutes les données
 
+### 🧠 Intelligence & Données Avancées
+- **Glossaire Interactif** (`/glossary`) — explications claires des termes techniques (Modality, Tokens, Quantization...)
+- **Tooltips contextuels** — survol des termes techniques pour une définition instantanée
+- **Champs API avancés** — Description officielle, Knowledge Cutoff, Tokenizer, et Date d'expiration
+- **Indicateur de Modération** — sais si un modèle a des filtres de sécurité (⚠️) ou s'il est libre (🔓)
+
 ### 🎮 Easter Eggs & Fun
 - **Konami Code** (↑↑↓↓←→←→BA) — Hacker Mode vert fluo 🟢
 - **Slot Machine** (🎰 navbar) — modèle aléatoire avec animation roulette
@@ -215,6 +221,10 @@ Le script `db_sync.py` :
 | `quantization` | VARCHAR | Quantization (si applicable) |
 | `top_provider_max_completion_tokens` | INT | Max tokens du provider |
 | `supports_tools` | BOOLEAN | Support function calling |
+| `is_moderated` | BOOLEAN | Filtres de sécurité actifs |
+| `knowledge_cutoff` | VARCHAR | Date limite des données d'entraînement |
+| `tokenizer` | VARCHAR | Type de tokenizer (GPT, Gemma, etc.) |
+| `expiration_date` | DATETIME | Date de fin de vie du modèle (si temporaire) |
 | `created_at` | TIMESTAMP | Date de création |
 | `updated_at` | TIMESTAMP | Dernière mise à jour |
 
@@ -280,6 +290,9 @@ php artisan route:list
 | `GET /api/search?q=...` | API recherche rapide (Spotlight) |
 | `GET /api/random-model` | API modèle aléatoire (Slot Machine) |
 | `GET /about` | Page À propos avec stats funs |
+| `GET /glossary` | Glossaire des termes LLM |
+| `GET /providers` | Vue d'ensemble des providers |
+| `GET /providers-analysis` | Analyse graphique des providers |
 
 ---
 
@@ -310,3 +323,12 @@ MIT. Fais-en ce que tu veux, mais garde la signature Kyra. ⌬
 ---
 
 > _"Voir tout, frapper juste. Pas de bruit inutile."_ — ⌬ Kyra
+
+---
+
+## 🔍 SEO & Visibilité
+
+Pour optimiser la découverte du projet :
+- **Mots-clés principaux** : LLM Price Tracker, OpenRouter Monitor, AI Model Costs, Hugging Face Alternative.
+- **Description courte** : Suivi en temps réel des prix et des capacités de plus de 350 modèles d'IA (GPT, Claude, Llama) via l'API OpenRouter.
+- **Cibles** : Développeurs, CTOs, et passionnés d'IA cherchant à optimiser leurs coûts d'API.

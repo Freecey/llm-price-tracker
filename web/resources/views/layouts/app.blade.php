@@ -3,7 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kyra's LLM Tracker ⌬</title>
+    <title>Kyra's LLM Tracker ⌬ | Suivi des Prix IA & OpenRouter</title>
+    <meta name="description" content="Plateforme de suivi des prix et des spécifications de plus de 350 modèles LLM (GPT-4, Claude, Llama) via OpenRouter. Analytics, comparaisons et alertes.">
+    <meta name="keywords" content="LLM, IA, Prix OpenRouter, GPT-4, Claude, Llama, AI Costs, Tracking, Kyra">
+    <meta name="author" content="Cédric (Cey) & Kyra">
     <link rel="icon" type="image/png" href="/img/favicon.png">
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
